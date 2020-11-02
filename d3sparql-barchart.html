@@ -14,6 +14,7 @@
       }
 
       function render (json) {
+        // TODO: config
         let config = {
           'label_x': 'Prefecture',
           'label_y': 'Area',
@@ -22,12 +23,14 @@
           'width': 700,  // canvas width
           'height': 300,  // canvas height
           'margin': 80,  // canvas margin
-          'selector': '#result'
+          'selector': '#result' // always
         }
+        // TODO: d3sparql function
         d3sparql.barchart(json, config)
       }
 
       function exec_offline () {
+        // TODO: need these cache items
         d3.json('cache/dbpedia/area-ja.json', render)
       }
 
@@ -53,6 +56,7 @@
             <button class="btn" onclick="toggle()" type="button"><i class="icon-chevron-up" id="button"></i></button>
         </div>
     </form>
+    <!-- TODO: Your query here. -->
     <textarea class="span9" id="sparql" rows=15 cols="100">
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX yago: <http://dbpedia.org/class/yago/>
