@@ -1,56 +1,59 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<html>
-  <head>
-    <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.css"/>
+<html lang="en">
+<head>
+    <title>d3 sparql</title>
+    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css"/>
     <script src="lib/d3/d3.v3.min.js"></script>
     <script src="d3sparql.js"></script>
     <script>
-    function exec() {
-      var endpoint = d3.select("#endpoint").property("value")
-      var sparql = d3.select("#sparql").property("value")
-      d3sparql.query(endpoint, sparql, render)
-    }
-    function render(json) {
-      var config = {
-        "label_x": "Prefecture",
-        "label_y": "Area",
-        "var_x": "pref",
-        "var_y": "area",
-        "width":  700,  // canvas width
-        "height": 300,  // canvas height
-        "margin":  80,  // canvas margin
-        "selector": "#result"
+      function exec () {
+        let endpoint = d3.select('#endpoint').property('value')
+        let sparql = d3.select('#sparql').property('value')
+        d3sparql.query(endpoint, sparql, render)
       }
-      d3sparql.barchart(json, config)
-    }
 
-    function exec_offline() {
-      d3.json("cache/dbpedia/area-ja.json", render)
-    }
-    function toggle() {
-      d3sparql.toggle()
-    }
+      function render (json) {
+        let config = {
+          'label_x': 'Prefecture',
+          'label_y': 'Area',
+          'var_x': 'pref',
+          'var_y': 'area',
+          'width': 700,  // canvas width
+          'height': 300,  // canvas height
+          'margin': 80,  // canvas margin
+          'selector': '#result'
+        }
+        d3sparql.barchart(json, config)
+      }
+
+      function exec_offline () {
+        d3.json('cache/dbpedia/area-ja.json', render)
+      }
+
+      function toggle () {
+        d3sparql.toggle()
+      }
     </script>
     <style>
-    .bar:hover {
-      fill: brown;
-    }
+        .bar:hover {
+            fill: brown;
+        }
     </style>
-  </head>
-  <body>
-    <div id="query" style="margin: 10px">
-      <h1>d3barchart</h1>
-      <form class="form-inline">
+</head>
+<body>
+<div id="query" style="margin: 10px">
+    <h1>d3barchart</h1>
+    <form class="form-inline">
         <label>SPARQL endpoint:</label>
         <div class="input-append">
-          <input id="endpoint" class="span5" value="http://dbpedia.org/sparql" type="text">
-          <button class="btn" type="button" onclick="exec()">Query</button>
-          <button class="btn" type="button" onclick="exec_offline()">Use cache</button>
-          <button class="btn" type="button" onclick="toggle()"><i id="button" class="icon-chevron-up"></i></button>
+            <input class="span5" id="endpoint" type="text" value="http://dbpedia.org/sparql">
+            <button class="btn" onclick="exec()" type="button">Query</button>
+            <button class="btn" onclick="exec_offline()" type="button">Use cache</button>
+            <button class="btn" onclick="toggle()" type="button"><i class="icon-chevron-up" id="button"></i></button>
         </div>
-      </form>
-      <textarea id="sparql" class="span9" rows=15>
+    </form>
+    <textarea class="span9" id="sparql" rows=15>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX yago: <http://dbpedia.org/class/yago/>
 PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
@@ -65,7 +68,7 @@ WHERE {
 }
 ORDER BY DESC(?area)
       </textarea>
-    </div>
-    <div id="result"></div>
-  </body>
+</div>
+<div id="result"></div>
+</body>
 </html>
