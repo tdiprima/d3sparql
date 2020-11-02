@@ -8,7 +8,6 @@ wget https://raw.githubusercontent.com/googlearchive/code-prettify/master/src/pr
 wget https://raw.githubusercontent.com/d3/d3-sankey/master/src/sankey.js
 wget http://d3js.org/topojson.v1.min.js
 wget https://github.com/sparql-book/sparql-book/blob/master/chapter5/D3/japan.topojson
-
-# TODO: topojson-1.5.3.tar.gz included.
+# TODO: get topojson world-50m.json (zip file in lib) and jquery.min.js
 # https://github.com/mbostock/topojson/blob/master/examples/world-50m.json
 # https://getbootstrap.com/docs/4.4/getting-started/download/
