@@ -59,18 +59,28 @@ d3sparql.fetch = function (url, callback) {
   if (d3sparql.debug) { console.log(url) }
   var mime = 'application/sparql-results+json'
   d3.xhr(url, mime, function (request) {
-    var json = request.responseText
-    if (d3sparql.debug) { console.log(json) }
-    callback(JSON.parse(json))
+    if (request !== null) {
+      var json = request.responseText
+      if (d3sparql.debug) { console.log(json) }
+      callback(JSON.parse(json))
+    } else {
+      var message = 'Either query failed or CORS error - check dev console.'
+      if (document.getElementById('result')) {
+        document.getElementById('result').innerHTML = '<span style="color: red">' + message + '</span>'
+      } else {
+        console.warn(message) // Warn, because we're going to have red errors; this one will be yellow.
+      }
+    }
   })
-/*
-  // d3.json sometimes fails to retrieve "application/sparql-results+json" as it is designed for "application/json"
-  d3.json(url, function(error, json) {
-    if (d3sparql.debug) { console.log(error) }
-    if (d3sparql.debug) { console.log(json) }
-    callback(json)
-  })
-*/
+
+  /*
+    // d3.json sometimes fails to retrieve "application/sparql-results+json" as it is designed for "application/json"
+    d3.json(url, function(error, json) {
+      if (d3sparql.debug) { console.log(error) }
+      if (d3sparql.debug) { console.log(json) }
+      callback(json)
+    })
+  */
 }
 
 d3sparql.query = function (endpoint, sparql, callback) {
@@ -211,6 +221,7 @@ d3sparql.tree = function (json, config) {
       }
     }
   }
+
   function traverse (node) {
     var list = pair.get(node)
     if (list) {
@@ -224,6 +235,7 @@ d3sparql.tree = function (json, config) {
       return { name: node, value: size.get(node) || 1 }
     }
   }
+
   var tree = traverse(root)
 
   if (d3sparql.debug) { console.log(JSON.stringify(tree)) }
@@ -924,13 +936,24 @@ d3sparql.sankey = function (json, config) {
   for (var i = 0; i < links.length; i++) {
     links[i].value = 2 // TODO: fix to use values on links
   }
-  var sankey = d3.sankey()
-    .size([opts.width, opts.height])
-    .nodeWidth(15)
-    .nodePadding(10)
-    .nodes(nodes)
-    .links(links)
-    .layout(32)
+  // TODO:
+  var sankey
+  try {
+    sankey = d3.sankey()
+      .size([opts.width, opts.height])
+      .nodeWidth(15)
+      .nodePadding(10)
+      .nodes(nodes)
+      .links(links)
+      .layout(32)
+  } catch (e) {
+    var message = e
+    if (document.getElementById('result')) {
+      document.getElementById('result').innerHTML = '<span style="color: red">' + message + '</span>'
+    } else {
+      console.warn(message) // Warn, because we're going to have red errors; this one will be yellow.
+    }
+  }
   var path = sankey.link()
   var color = d3.scale.category20()
   var svg = d3sparql.select(opts.selector, 'sankey').append('svg')
@@ -1313,9 +1336,11 @@ d3sparql.sunburst = function (json, config) {
         d3.select(this).style('visibility', isParentOf(d, e) ? null : 'hidden')
       })
   }
+
   function maxDepth (d) {
     return d.children ? Math.max.apply(Math, d.children.map(maxDepth)) : d.y + d.dy
   }
+
   function arcTween (d) {
     var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx])
     var yd = d3.interpolate(y.domain(), [d.y, maxDepth(d)])
@@ -1328,6 +1353,7 @@ d3sparql.sunburst = function (json, config) {
       }
     }
   }
+
   function isParentOf (p, c) {
     if (p === c) return true
     if (p.children) {
@@ -1432,15 +1458,15 @@ d3sparql.circlepack = function (json, config) {
     .attr('cx', function (d) { return d.x })
     .attr('cy', function (d) { return d.y })
     .attr('r', function (d) { return d.r })
-  /*
-    // CSS: circle { ... }
-    .attr("fill", function(d) { return d.children ? "#1f77b4" : "#cccccc" })
-    .attr("fill-opacity", function(d) { return d.children ? ".1" : "1" })
-    .attr("stroke", function(d) { return d.children ? "steelblue" : "#999999" })
-    .attr("pointer-events", function(d) { return d.children ? "all" : "none" })
-    .on("mouseover", function() { d3.select(this).attr("stroke", "#ff7f0e").attr("stroke-width", ".5px") })
-    .on("mouseout", function() { d3.select(this).attr("stroke", "steelblue").attr("stroke-width", ".5px") })
-*/
+    /*
+      // CSS: circle { ... }
+      .attr("fill", function(d) { return d.children ? "#1f77b4" : "#cccccc" })
+      .attr("fill-opacity", function(d) { return d.children ? ".1" : "1" })
+      .attr("stroke", function(d) { return d.children ? "steelblue" : "#999999" })
+      .attr("pointer-events", function(d) { return d.children ? "all" : "none" })
+      .on("mouseover", function() { d3.select(this).attr("stroke", "#ff7f0e").attr("stroke-width", ".5px") })
+      .on("mouseout", function() { d3.select(this).attr("stroke", "steelblue").attr("stroke-width", ".5px") })
+  */
     .on('click', function (d) { return zoom(node === d ? tree : d) })
 
   vis.selectAll('text')
@@ -1450,7 +1476,7 @@ d3sparql.circlepack = function (json, config) {
     .attr('class', function (d) { return d.children ? 'parent' : 'child' })
     .attr('x', function (d) { return d.x })
     .attr('y', function (d) { return d.y })
-  //    .attr("dy", ".35em")
+    //    .attr("dy", ".35em")
     .style('opacity', function (d) { return d.r > 20 ? 1 : 0 })
     .text(function (d) { return d.name })
     // rotate to avoid string collision
@@ -1534,6 +1560,7 @@ d3sparql.treemap = function (json, config) {
   var color = opts.color
 
   function count (d) { return 1 }
+
   function size (d) { return d.value }
 
   var treemap = d3.layout.treemap()
@@ -1771,6 +1798,7 @@ d3sparql.treemapzoom = function (json, config) {
         transitioning = false
       })
     }
+
     return g
   }
 
@@ -1973,47 +2001,56 @@ d3sparql.namedmap = function (json, config) {
     .attr('height', opts.height)
 
   d3.json(opts.topojson, function (topojson_map) {
-    var geo = topojson.object(topojson_map, topojson_map.objects[opts.mapname]).geometries
-    var projection = d3.geo.mercator()
-      .center([opts.center_lng, opts.center_lat])
-      .translate([opts.width / 2, opts.height / 2])
-      .scale(opts.scale)
-    var path = d3.geo.path().projection(projection)
-    switch (opts.color_scale) {
-      case 'log':
-        var scale = d3.scale.log()
-        break
-      default:
-        var scale = d3.scale.linear()
-        break
+    if (topojson_map !== null) {
+      var geo = topojson.object(topojson_map, topojson_map.objects[opts.mapname]).geometries
+      var projection = d3.geo.mercator()
+        .center([opts.center_lng, opts.center_lat])
+        .translate([opts.width / 2, opts.height / 2])
+        .scale(opts.scale)
+      var path = d3.geo.path().projection(projection)
+      switch (opts.color_scale) {
+        case 'log':
+          var scale = d3.scale.log()
+          break
+        default:
+          var scale = d3.scale.linear()
+          break
+      }
+      var color = scale.domain(extent).range([opts.color_min, opts.color_max])
+
+      svg.selectAll('path')
+        .data(geo)
+        .enter()
+        .append('path')
+        .attr('d', path)
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.5)
+        .style('fill', function (d, i) {
+          // map SPARQL results to colors
+          return color(size[d.properties[opts.keyname]])
+        })
+
+      svg.selectAll('.place-label')
+        .data(geo)
+        .enter()
+        .append('text')
+        .attr('font-size', '8px')
+        .attr('class', 'place-label')
+        .attr('transform', function (d) {
+          var lat = d.properties.latitude
+          var lng = d.properties.longitude
+          return 'translate(' + projection([lng, lat]) + ')'
+        })
+        .attr('dx', '-1.5em')
+        .text(function (d) { return d.properties[opts.keyname] })
+    } else {
+      var message = 'topojson_map is null'
+      if (document.getElementById('result')) {
+        document.getElementById('result').innerHTML = '<span style="color: red">' + message + '</span>'
+      } else {
+        console.warn(message)
+      }
     }
-    var color = scale.domain(extent).range([opts.color_min, opts.color_max])
-
-    svg.selectAll('path')
-      .data(geo)
-      .enter()
-      .append('path')
-      .attr('d', path)
-      .attr('stroke', 'black')
-      .attr('stroke-width', 0.5)
-      .style('fill', function (d, i) {
-        // map SPARQL results to colors
-        return color(size[d.properties[opts.keyname]])
-      })
-
-    svg.selectAll('.place-label')
-      .data(geo)
-      .enter()
-      .append('text')
-      .attr('font-size', '8px')
-      .attr('class', 'place-label')
-      .attr('transform', function (d) {
-        var lat = d.properties.latitude
-        var lng = d.properties.longitude
-        return 'translate(' + projection([lng, lat]) + ')'
-      })
-      .attr('dx', '-1.5em')
-      .text(function (d) { return d.properties[opts.keyname] })
   })
 }
 
