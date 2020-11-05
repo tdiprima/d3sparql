@@ -1281,7 +1281,7 @@ d3sparql.treemapzoom = function (json, config) {
   }
 }
 
-//
+// World Map spotted by coordinates (longitude and latitude)
 // file17.htm
 d3sparql.coordmap = function (json, config) {
   config = config || {}
